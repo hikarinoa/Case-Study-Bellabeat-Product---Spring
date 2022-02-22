@@ -1,0 +1,253 @@
+---
+title: "Case Study"
+author: "Jeramil Maravillosa"
+date: "2/22/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+# SPRING - BELLABEAT SMART WATER BOTTLE
+
+## CAN THIS SMART WATER BOTTLE BLOOM IN THE MARKET?
+
+## Spring 
+### Product Description
+Spring tracks daily hydration and sends regular reminders to help establish a healthy hydration habit. It calculates the optimal amount of water for the body based on the activity level, age, height, weight, local weather and if pregnant or breastfeeding.
+
+### Smart Water Bottle Market
+In this generation when health and fitness is becoming a growing trend, having a smart gadget and application makes it easier for the user to track their daily progress. Now, smart water bottles are becoming a necessity as it enables the user to track their daily water intake and hit their target through connecting with the fitness applications. A recent report from Market Research Blog indicated that the smart water bottle market is expected to expand at a CAGR of approximately ~11% through 2031. [link](https://marketresearchblog.org/2022/02/smart-water-bottle-market-is-projected-to-record-a-cagr-of-11-during-the-forecast-period-2021-2031)
+
+### Business Task
+
+ •	Analyze trends of another smart device data to gain insights on non-Bellabeat consumers
+ •	Apply the trends on Bellabeat users
+ •	Provide marketing strategy/high-level recommendations from using and analyzing  dataset to provide insight on marketing strategy for Spring in the growing Smart Water Bottle Market
+
+### Stakeholders
+
+ •Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer 
+ •Sando Mur: Bellabeat’s cofounder 
+ •Marketing Analytics Team
+
+## Ask
+
+1.	How can the data from the dataset be used to determine the market for Spring?
+2.	How is Spring compared to other smart water bottles in the market?
+3.	How to use the insights to create a new strategy for Spring to expand their market?
+
+### Limitations
+
+Factors found  that has an impact on the analysis:
+
+1.	Data gathered between 12 March – 12 May 2016
+2.	Only 33 people participated – this sample size is too small to obtain a more accurate insight
+3.	Unknown data on users: gender, height, age, local weather, pregnant or breastfeeding, activities performed
+4.	Unknown number of females out of the participants (which is the main target audience)
+5.	Data sets have missing values
+6.	Data collection is done through a Third-party survey via Amazon Mechanical Turk
+7.	No data available in the dataset on smart water bottles features and specifications comparison to influence the analysis. 
+8.	Need more data on battery life on each smart bottles for comparison
+
+### Overcoming Limitations
+
+1.	Created a new data set for bottle comparison and gathered data based on other best smart water bottles to help with comparison based on Cosmopolitan Magazine[link](https://www.cosmopolitan.com/food-cocktails/g38594825/best-smart-water-bottles/) and load the same in R (Smartwaterbottles_comparison.csv)
+
+2. Prices on the  smart water bottle products are based on the websites linked (prices may vary according to third party vendors) [Bellabeat](https://bellabeat.com/spring/) [Larq](https://www.livelarq.com/shop)  [Hidratespark](https://hidratespark.com/products) [CrazyCap](https://waatr.com/collections/crazycap)  [Icewater](https://www.amazon.com/ICEWATER-Bottle-Remind-Hydrated-Dancing/dp/B0725DWZQN) [JosephJoseph](https://us.josephjoseph.com/)[Thermos](https://www.amazon.com/Thermos-Ounce-Hydration-Bottle-Connected/dp/B00ZQUNI6W?th=1) [Monos](https://monos.com/products/kiyo?variant=37463041278151)
+
+## Preparing the data
+
+Downloaded the package from FitBit Fitness Tracker Data in Kaggle  [link](https://www.kaggle.com/arashnic/fitbit) and loaded in R for data cleaning and organizing. I chose R as it would enable me to get more familiar with the language.
+
+### Installed and loaded packages that will be used
+
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("lubridate")
+library(lubridate)
+install.packages("dplyr")
+library(dplyr)
+install.packages("tidyr")
+library(tidyr)
+```
+
+After viewing the data sets, I have determined to use the following .csv files for my analysis:
+
+* dailyActivity_merged
+* sleepDay_merged
+* Smartwaterbottles_comparison
+
+```{r}
+
+daily_activity <- read_csv("/cloud/project/Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+
+sleep_record <- read_csv("/cloud/project/Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+
+bottles_compare <- read_csv("/cloud/project/Fitabase Data 4.12.16-5.12.16/Smartwaterbottles_comparison.csv")
+
+```
+
+Found that the ActivityDate column in daily_activity and SleepDay in sleep_record to right Date Format
+
+```{r}
+daily_activity$ActivityDate <-  as.Date(daily_activity$ActivityDate,format='%m/%d/%Y')
+
+sleep_record$SleepDay <-  as.Date(sleep_record$SleepDay,format='%m/%d/%Y')
+```
+
+## Analysis
+
+Identified the Number of participants in tables 
+
+*daily_activity: 33
+*sleep_: 24
+
+According to this the number of participants in both tables are not the same. Hence, this will impact the analysis we will be making to obtain an insight.
+```{r}
+n_distinct(daily_activity$Id)
+n_distinct(sleep_record$Id)
+```
+
+I wanted to find out on the average time these participants spend based on the Activity Intensity. I used the different categories of Activity Intensity from daily_activity data set and obtained the average number of minutes under each category. With this we can find out activity levels of the users.
+
+```{r}
+daily_activity %>%
+  select(VeryActiveMinutes,FairlyActiveMinutes, LightlyActiveMinutes,SedentaryMinutes)%>%
+  summary()
+```
+```{r}
+active.min <-data.frame(
+Activity_Intensity = c("Very Active","Fairly Active","Lightly Active","Sedentary"),
+Average_Minutes = c(21, 13.56,192.8,991.2))
+```
+```{r}
+head(active.min)
+```
+```{r}
+ggplot(data = active.min, aes(x= Activity_Intensity, label = 'Activity Intensity', y = Average_Minutes, fill = Activity_Intensity)) +
+  geom_bar(stat = 'identity', width= .8) +
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1, size = 9), legend.position = "none")+
+  geom_text(aes(label=Average_Minutes), position=position_dodge(width=0.5), vjust=-0.25) +
+  labs(x = "Activity Intensity", y = "Average Minutes")
+```
+
+As we can see in this chart, majority of the users activity is mostly Sedentiary with an average of 16.52 hours, while we cannot determine the activity performed for the other categories, there is a fair amount of users who are Lighty Active with average of 3.2 hours. From these, we can assume that the users are not performing high intensity activities.
+
+Dehydration affect's a person's energy levels, mood and mental performance. Hence, we can encourage the users to have good body hydration level by drinking more water to prevent any adverse effect on the body and mind.
+
+Next I needed to obtain the data about the sleeping habits of the users, as a medical study conducted that hydration affects sleep. I took the average time the participants spent asleep or just in their bed.
+
+```{r}
+  sleep_record %>%
+  select(TotalSleepRecords,TotalMinutesAsleep,TotalTimeInBed) %>%
+  summary()
+```
+```{r}
+sleep.summary <- data.frame (
+  Asleep_InBed = c("Asleep", "In Bed"),
+  Average_Time = c(419.5, 458.6))
+
+```
+```{r}
+ggplot(data=sleep.summary, aes(x=Asleep_InBed, y=Average_Time, fill = Asleep_InBed))+
+  geom_bar(stat = 'identity', width= .8) +
+  geom_text(aes(label=Average_Time), position=position_dodge(width=0.5), vjust=-0.25) +
+  theme(legend.position = "none")+
+  labs(x = "In Bed or Asleep", y = "Average Time in Minutes")
+```
+
+According to this chart, majority of the users have spent an average of 7.64 hours being in bed, which is more than compared to the the average time of 6.99 hours they are asleep. Although there is a minor difference, this should still be considered to figure as to what keeps them in bed rather than having their full sleep. 
+
+According to research, [link](https://www.sleepfoundation.org/nutrition/hydration-and-sleep#:~:text=Dehydration%20may%20create%20barriers%20to,may%20lead%20to%20sleep%20interruptions.) "Dehydration may create barriers to sleep, and insufficient sleep may increase the chances of being dehydrated. At the same time, too much fluid intake can cause excess urination that may lead to sleep interruptions." Hence, we can encourage the users to keep right level of hydration that would promote a good sleeping habit.
+
+## Bellabeat Spring vs Other Smart Water Bottles
+
+I did a comparison on the aesthetics, price and features of other smart water bottles available in the market from Cosmopolitan Magazine[link](https://www.cosmopolitan.com/food-cocktails/g38594825/best-smart-water-bottles/) and load the same in R (Smartwaterbottles_comparison.csv))
+
+Noting that some of these products have other sizes available, I have compared Spring according to the smallest size the products have.
+
+```{r}
+view(bottles_compare)
+```
+
+### Price Comparison
+
+```{r fig.width=11,fig.height=6}
+ggplot(bottles_compare, aes(y = Product, x = Price_Size1, fill = Price_Size1)) + 
+  geom_bar(stat = 'identity', width= .8) +
+    theme(legend.position = "none")+
+  geom_text(aes(label= Price_Size1), position=position_dodge(width= 1.5),hjust=-0.2, vjust=0.5)+
+  labs(x = "Price in US$", y = "Product") 
+```
+
+According to this chart, Spring can be considered in the high end range as compared to the other competitors whose products have the same concept of hydration tracking. 
+
+### Volume Comparison
+
+```{r fig.width=11,fig.height=6}
+ggplot(bottles_compare, aes(y = Product, x = Size_Volume1_ML, fill = Size_Volume1_ML)) + 
+  geom_bar(stat = 'identity', width= .7) +
+  theme(legend.position = "none")+
+  geom_text(aes(label= Size_Volume1_ML), position=position_dodge(width=0.3),hjust= -0.02, vjust=0.5) +
+  labs(y = "Product", x = "Volume in ML") 
+```
+*Volume is converted from OZ to ML*
+
+Based on this data, there are other smart water bottles that have more volume compared to Spring at a lesser cost. Hence, a potential customer, may incline on buying a product with the same functions with a bigger volume at a lesser cost.
+
+
+### Weight Comparison
+
+```{r fig.width=11,fig.height=6}
+ggplot(bottles_compare, aes(y = Product, x = Weight_Size1_Gram, fill = Weight_Size1_Gram)) + 
+  geom_bar(stat = 'identity', width= .7) +
+  theme(legend.position = "none")+
+  geom_text(aes(label= Weight_Size1_Gram), position=position_dodge(width=0.3),hjust= -0.02, vjust=0.5) +
+  labs(y = "Product", x = "Weight in Grams")
+```
+
+According to the chart, Spring is on the heavier end in weight compared to other smart water bottles in the market. Usually, customers would want a lighter but sturdy bottle to carry around with them without the feeling of being weight down in the hand or in their bags.
+
+### Comparison between Bottle Aesthetics, Material Composition and Features
+
+```{r}
+select(bottles_compare, Product, Size_Available, Colour_Options,Self_Cleaning, Materials)
+```
+
+Comparing to other products, Spring has only one colour to choose from as compared to other brands. Some people, may not have this colour as preference and would like to be able to pick the colour they prefer to carry around with them or according to their mood. 
+
+Other products have other Volume sizes available so the customers can have the option of choosing the size that they feel would best suit their lifestyle. 
+
+There are other customers who are conscious of the material build of the water bottles - for quality, strength, design, harmfulness.
+
+While Spring is made out of glass body and silicone cover for grip, there is a tendency of glass breakage when dropped. Therefore, it will not be very economical for a user to purchase. Other products are made out of stainless steel and insulation features that can keep their water cold for hours and very sturdy when dropped. While some are made of Tritan/BPA free plastic and fairly sturdy to breakage, some people are not comfortable in reusing these bottles as it is still considered "plastic". Other products also have a Self Cleaning feature - which uses UV to sterilize the water - another benefit that may appeal other users.
+
+# Recommendation
+
+Based on the analysis, Bellabeat can expand the target audience of Spring product. By using their intensive marketing advertisements appropriately through eye catching ads on the new features of Bellabeat that would fit everyone's lifestyle.
+
+### Target Market
+
+The main target audience of Bellabeat products are women, however, it is possible to expand to appeal to other gender specturum. 
+
+If Bellabeat is to keep the same design and materials, they should consider to provide more colour options to choose from or colour options to interchange the grip colours according to the mood of the user.
+
+### Value for Money
+
+Consider updating size options, material build option for convenience, and extra features like insulation, self cleaning cleaning while keeping costs competitive.
+
+### Promote Healthy Lifestyle
+
+Based on the analysis, we can correlate on how dehydration can affect a person's everyday habits, mood, physical and mental performance. Making Spring a more appealing product to health conscious audiences.
+
+On the day, the app can send unique notifications encouraging users through the benefit of keeping the right body hydration levels. Unique notification such as designed pop-ups with words of encouragements, checking on how they feel with options, did you know? information related to hydration and body.
+
+Promoting good sleeping habits by sending notification to the user on when the last water in take should be prior to bed time to improve sleep.
+
+# Conclusion
+
+Based on the data sets and limitations with the data available, it is difficult to produce a better analysis to the business tasks to be solved.
+
+However, based on the available data, these are the recommendations to expand their target audience in the growing smart water bottles market.
